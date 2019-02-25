@@ -45,6 +45,10 @@ class ImageController extends Controller
         if($filterName == 'greyscale') {
             $this->img->greyscale();
         }
+
+        if($filterName == 'blur') {
+            $this->img->blur(15);
+        }
     }
 
     public function applyWatermarkText(String $text) {
