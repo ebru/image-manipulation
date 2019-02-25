@@ -11,6 +11,12 @@ class ImageController extends Controller
 
     public function process(Request $request)
     {
+        $validationResponse = $this->validateRequest($request);
+
+        if ($validationResponse) {
+            return response()->json($validationResponse);
+        }
+
         $imgFile = $request->file('image_file');
         $imgName = $imgFile->getClientOriginalName();
 
@@ -39,6 +45,42 @@ class ImageController extends Controller
                 'watermark_text' => $request->input('watermark_text')
             ]
         ]);
+    }
+
+    public function validateRequest(Request $request) {
+        if(!$request->hasFile('image_file')) {
+            return [
+                'notice' => "An image file should be provided."
+            ];
+        }
+
+        if(!$request->has('filter_name') && !$request->has('watermark_text')) {
+            return [
+                'notice' => "At least a filter or watermark should be applied."
+            ];
+        }
+
+        if($request->has('filter_name')) {
+            if(empty($request->input('filter_name'))) {
+                return [
+                    'notice' => "Filter name field cannot be empty."
+                ];
+            }
+
+            if($request->input('filter_name') != 'greyscale' && $request->input('filter_name') != 'blur') {
+                return [
+                    'notice' => "Only greyscale or blur can be applied as filter."
+                ];
+            }
+        }
+
+        if($request->has('watermark_text')) {
+            if(empty($request->input('watermark_text'))) {
+                return [
+                    'notice' => "Watermark text field cannot be empty."
+                ];
+            }
+        }
     }
 
     public function applyFilter(String $filterName) {
