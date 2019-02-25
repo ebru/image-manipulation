@@ -19,8 +19,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('/images', function(Request $request)
 {
-    $img = Image::make($request->file('image_file'));
-    $img->save('images/foo.png');
+    $imgFile = $request->file('image_file');
+    $imgName = $imgFile->getClientOriginalName();
+
+    $img = Image::make($imgFile);
+
+    $img->save("images/{$imgName}");
+
+    $img->greyscale();
 
     $img->text('The quick brown fox jumps over the lazy dog.', 50, 50, function($font) {
         $font->color('#fdf6e3');
@@ -29,11 +35,11 @@ Route::post('/images', function(Request $request)
         $font->angle(45);
     });
 
-    $img->save('images/foo_modified.jpg');
+    $img->save("images/modified_{$imgName}");
 
     $path = url('/') . '/images';
-    $pathOriginalImage = "{$path}/foo.png";
-    $pathModifiedImage = "{$path}/foo_modified.jpg";
+    $pathOriginalImage = "{$path}/{$imgName}";
+    $pathModifiedImage = "{$path}/modified_{$imgName}";
 
     return response()->json([
         'original_image' => $pathOriginalImage,
