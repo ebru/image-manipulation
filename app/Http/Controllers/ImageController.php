@@ -53,6 +53,12 @@ class ImageController extends Controller
                 'notice' => "An image file should be provided."
             ];
         }
+        
+        if(!$request->file('image_file')->isValid()) {
+            return [
+                'notice' => "There was a problem while uploading the image file."
+            ];
+        }
 
         if(!$request->has('filter_name') && !$request->has('watermark_text')) {
             return [
