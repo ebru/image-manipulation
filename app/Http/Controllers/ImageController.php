@@ -48,40 +48,40 @@ class ImageController extends Controller
     }
 
     public function validateRequest(Request $request) {
-        if(!$request->hasFile('image_file')) {
+        if (!$request->hasFile('image_file')) {
             return [
                 'notice' => "An image file should be provided."
             ];
         }
         
-        if(!$request->file('image_file')->isValid()) {
+        if (!$request->file('image_file')->isValid()) {
             return [
                 'notice' => "There was a problem while uploading the image file."
             ];
         }
 
-        if(!$request->has('filter_name') && !$request->has('watermark_text')) {
+        if (!$request->has('filter_name') && !$request->has('watermark_text')) {
             return [
                 'notice' => "At least a filter or watermark should be applied."
             ];
         }
 
-        if($request->has('filter_name')) {
-            if(empty($request->input('filter_name'))) {
+        if ($request->has('filter_name')) {
+            if (empty($request->input('filter_name'))) {
                 return [
                     'notice' => "Filter name field cannot be empty."
                 ];
             }
 
-            if($request->input('filter_name') != 'greyscale' && $request->input('filter_name') != 'blur') {
+            if ($request->input('filter_name') != 'greyscale' && $request->input('filter_name') != 'blur') {
                 return [
                     'notice' => "Only greyscale or blur can be applied as filter."
                 ];
             }
         }
 
-        if($request->has('watermark_text')) {
-            if(empty($request->input('watermark_text'))) {
+        if ($request->has('watermark_text')) {
+            if (empty($request->input('watermark_text'))) {
                 return [
                     'notice' => "Watermark text field cannot be empty."
                 ];
@@ -90,11 +90,11 @@ class ImageController extends Controller
     }
 
     public function applyFilter(String $filterName) {
-        if($filterName == 'greyscale') {
+        if ($filterName == 'greyscale') {
             $this->img->greyscale();
         }
 
-        if($filterName == 'blur') {
+        if ($filterName == 'blur') {
             $this->img->blur(15);
         }
     }
