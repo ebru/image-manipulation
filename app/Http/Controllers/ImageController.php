@@ -17,8 +17,13 @@ class ImageController extends Controller
         $this->img = Image::make($imgFile);
         $this->img->save("images/{$imgName}");
 
-        $this->applyFilter($request->input('filter_name'));
-        $this->applyWatermarkText($request->input('watermark_text'));
+        if ($request->filled('filter_name')) {
+            $this->applyFilter($request->input('filter_name'));
+        }
+
+        if ($request->filled('watermark_text')) {
+            $this->applyWatermarkText($request->input('watermark_text'));
+        }
 
         $this->img->save("images/modified_{$imgName}");
 
