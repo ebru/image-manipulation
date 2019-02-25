@@ -7,31 +7,20 @@ use Image;
 
 class ImageController extends Controller
 {
-    /**
-     * Process the image.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    private $img;
+
     public function process(Request $request)
     {
         $imgFile = $request->file('image_file');
         $imgName = $imgFile->getClientOriginalName();
 
-        $img = Image::make($imgFile);
+        $this->img = Image::make($imgFile);
+        $this->img->save("images/{$imgName}");
 
-        $img->save("images/{$imgName}");
+        $this->applyFilter($request->input('filter_name'));
+        $this->applyWatermarkText($request->input('watermark_text'));
 
-        $img->greyscale();
-
-        $img->text('The quick brown fox jumps over the lazy dog.', 50, 50, function($font) {
-            $font->color('#fdf6e3');
-            $font->align('center');
-            $font->valign('center');
-            $font->angle(45);
-        });
-
-        $img->save("images/modified_{$imgName}");
+        $this->img->save("images/modified_{$imgName}");
 
         $path = url('/') . '/images';
         $pathOriginalImage = "{$path}/{$imgName}";
@@ -39,6 +28,26 @@ class ImageController extends Controller
 
         return response()->json([
             'original_image' => $pathOriginalImage,
-            'modified_image' => $pathModifiedImage]);
+            'modified_image' => $pathModifiedImage,
+            'applied' => [
+                'filter_name' => $request->input('filter_name'),
+                'watermark_text' => $request->input('watermark_text')
+            ]
+        ]);
+    }
+
+    public function applyFilter(String $filterName) {
+        if($filterName == 'greyscale') {
+            $this->img->greyscale();
+        }
+    }
+
+    public function applyWatermarkText(String $text) {
+        $this->img->text($text, 250, 250, function($font) {
+            $font->color('#fdf6e3');
+            $font->align('center');
+            $font->valign('center');
+            $font->angle(45);
+        });
     }
 }
