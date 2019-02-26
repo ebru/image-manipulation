@@ -14,10 +14,12 @@ class ImageProcess extends JsonResource
      */
     public function toArray($request)
     {
+        $baseUrl = url('/');
+
         return [
             'image' => [
-                'original' => $this->original_image_file,
-                'modified' => $this->modified_image_file,
+                'original' => $baseUrl . $this->original_image_file,
+                'modified' => $baseUrl . $this->modified_image_file,
                 'applied' => [
                     'filter' => [
                         'name' => $this->filter_name

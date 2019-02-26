@@ -38,14 +38,10 @@ class ImageController extends Controller
         Storage::disk('public')->put("images/modified/{$imageHashName}", $this->img->stream());
         $modifiedImagePath = Storage::url("images/modified/{$imageHashName}");
 
-        $baseUrl = url('/');
-        $pathOriginalImage = "{$baseUrl}{$originalImagePath}";
-        $pathModifiedImage = "{$baseUrl}{$modifiedImagePath}";
-
         $imageProcess = new ImageProcess();
 
-        $imageProcess->original_image_file = $pathOriginalImage;
-        $imageProcess->modified_image_file = $pathModifiedImage;
+        $imageProcess->original_image_file = $originalImagePath;
+        $imageProcess->modified_image_file = $modifiedImagePath;
         $imageProcess->filter_name = $request->input('filter_name');
         $imageProcess->watermark_text = $request->input('watermark_text');
 
