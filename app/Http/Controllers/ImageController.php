@@ -38,7 +38,6 @@ class ImageController extends Controller
         $imageHashName = $request->file('image_file')->hashName();
 
         Storage::disk('public')->put("images/original/{$imageHashName}", $img->stream());
-        $originalImagePath = Storage::url("images/original/{$imageHashName}");
 
         if ($request->filled('filter_name')) {
             $this->applyFilter($request->input('filter_name'), $img);
@@ -49,6 +48,8 @@ class ImageController extends Controller
         }
 
         Storage::disk('public')->put("images/modified/{$imageHashName}", $img->stream());
+
+        $originalImagePath = Storage::url("images/original/{$imageHashName}");
         $modifiedImagePath = Storage::url("images/modified/{$imageHashName}");
 
         return [
