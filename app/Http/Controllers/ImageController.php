@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Image;
+use Storage;
 
 class ImageController extends Controller
 {
@@ -17,11 +18,12 @@ class ImageController extends Controller
             return response()->json($validationResponse);
         }
 
-        $imgFile = $request->file('image_file');
-        $imgName = $imgFile->getClientOriginalName();
+        $pathToOriginalImage = Storage::putFile('images/original', $request->file('image_file'));
+        $pathToModifiedImage = Storage::putFile('images/modified', $request->file('image_file'));
 
+        $imgFile = $request->file('image_file');
         $this->img = Image::make($imgFile);
-        $this->img->save("images/{$imgName}");
+        $this->img->save($pathToOriginalImage);
 
         if ($request->filled('filter_name')) {
             $this->applyFilter($request->input('filter_name'));
@@ -31,11 +33,11 @@ class ImageController extends Controller
             $this->applyWatermarkText($request->input('watermark_text'));
         }
 
-        $this->img->save("images/modified_{$imgName}");
+        $this->img->save($pathToModifiedImage);
 
-        $path = url('/') . '/images';
-        $pathOriginalImage = "{$path}/{$imgName}";
-        $pathModifiedImage = "{$path}/modified_{$imgName}";
+        $baseUrl = url('/');
+        $pathOriginalImage = "{$baseUrl}/{$pathToOriginalImage}";
+        $pathModifiedImage = "{$baseUrl}/{$pathToModifiedImage}";
 
         return response()->json([
             'original_image' => $pathOriginalImage,
