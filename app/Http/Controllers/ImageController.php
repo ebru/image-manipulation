@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Image;
 use Storage;
+use App\ImageProcess;
+use App\Http\Resources\ImageProcess as ImageProcessResource;
 
 class ImageController extends Controller
 {
@@ -40,20 +42,18 @@ class ImageController extends Controller
         $pathOriginalImage = "{$baseUrl}{$originalImagePath}";
         $pathModifiedImage = "{$baseUrl}{$modifiedImagePath}";
 
-        return response()->json([
-            'image' => [
-                'original' => $pathOriginalImage,
-                'modified' => $pathModifiedImage,
-                'applied' => [
-                    'filter' => [
-                        'name' => $request->input('filter_name')
-                    ],
-                    'watermark' => [
-                        'text' => $request->input('watermark_text')
-                    ]
-                ]
-            ]
-        ]);
+        $imageProcess = new ImageProcess();
+
+        $imageProcess->original_image_file = $pathOriginalImage;
+        $imageProcess->modified_image_file = $pathModifiedImage;
+        $imageProcess->filter_name = $request->input('filter_name');
+        $imageProcess->watermark_text = $request->input('watermark_text');
+
+        // if ($imageProcess->save()) {
+        //     return new ImageProcessResource($imageProcess);
+        // }
+
+        return new ImageProcessResource($imageProcess);
     }
 
     public function validateRequest(Request $request) {
