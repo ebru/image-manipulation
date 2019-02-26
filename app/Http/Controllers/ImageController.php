@@ -40,11 +40,17 @@ class ImageController extends Controller
         $pathModifiedImage = "{$baseUrl}/{$pathToModifiedImage}";
 
         return response()->json([
-            'original_image' => $pathOriginalImage,
-            'modified_image' => $pathModifiedImage,
-            'applied' => [
-                'filter_name' => $request->input('filter_name'),
-                'watermark_text' => $request->input('watermark_text')
+            'image' => [
+                'original' => $pathOriginalImage,
+                'modified' => $pathModifiedImage,
+                'applied' => [
+                    'filter' => [
+                        'name' => $request->input('filter_name')
+                    ],
+                    'watermark' => [
+                        'text' => $request->input('watermark_text')
+                    ]
+                ]
             ]
         ]);
     }
