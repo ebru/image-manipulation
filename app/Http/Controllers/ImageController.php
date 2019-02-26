@@ -8,7 +8,7 @@ use Storage;
 
 class ImageController extends Controller
 {
-    private $img;
+    private $image;
 
     public function process(Request $request)
     {
@@ -18,12 +18,12 @@ class ImageController extends Controller
             return response()->json($validationResponse);
         }
 
-        $pathToOriginalImage = Storage::putFile('images/original', $request->file('image_file'));
-        $pathToModifiedImage = Storage::putFile('images/modified', $request->file('image_file'));
+        $this->img = Image::make($request->file('image_file'));
 
-        $imgFile = $request->file('image_file');
-        $this->img = Image::make($imgFile);
-        $this->img->save($pathToOriginalImage);
+        $imageHashName = $request->file('image_file')->hashName();
+
+        Storage::disk('public')->put("images/original/{$imageHashName}", $this->img->stream());
+        $originalImagePath = Storage::url("images/original/{$imageHashName}");
 
         if ($request->filled('filter_name')) {
             $this->applyFilter($request->input('filter_name'));
@@ -33,11 +33,12 @@ class ImageController extends Controller
             $this->applyWatermarkText($request->input('watermark_text'));
         }
 
-        $this->img->save($pathToModifiedImage);
+        Storage::disk('public')->put("images/modified/{$imageHashName}", $this->img->stream());
+        $modifiedImagePath = Storage::url("images/modified/{$imageHashName}");
 
         $baseUrl = url('/');
-        $pathOriginalImage = "{$baseUrl}/{$pathToOriginalImage}";
-        $pathModifiedImage = "{$baseUrl}/{$pathToModifiedImage}";
+        $pathOriginalImage = "{$baseUrl}{$originalImagePath}";
+        $pathModifiedImage = "{$baseUrl}{$modifiedImagePath}";
 
         return response()->json([
             'image' => [
@@ -114,5 +115,11 @@ class ImageController extends Controller
             $font->valign('center');
             $font->angle(45);
         });
+    }
+
+    public function storeImage(Image $img, String $subDir, String $hashName) {
+        Storage::disk('public')->put("images/{$subDir}/{$hashName}", $img->stream());
+
+        return Storage::url("images/{$subDir}/{$hashName}");
     }
 }
