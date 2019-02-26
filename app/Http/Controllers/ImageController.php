@@ -49,13 +49,11 @@ class ImageController extends Controller
         $imageProcess->filter_name = $request->input('filter_name');
         $imageProcess->watermark_text = $request->input('watermark_text');
 
-        // if ($imageProcess->save()) {
-        //     return new ImageProcessResource($imageProcess);
-        // }
-
-        return new ImageProcessResource($imageProcess);
+        if ($imageProcess->save()) {
+           return new ImageProcessResource($imageProcess);
+        }
     }
-    
+
     public function applyFilter(String $filterName) {
         if ($filterName == 'greyscale') {
             $this->img->greyscale();
