@@ -10,8 +10,6 @@ use App\Http\Resources\ImageProcess as ImageProcessResource;
 
 class ImageController extends Controller
 {
-    private $image;
-
     public function process(Request $request)
     {
         $validationResponse = $this->validateRequest($request);
@@ -20,48 +18,59 @@ class ImageController extends Controller
             return response()->json($validationResponse);
         }
 
-        $this->img = Image::make($request->file('image_file'));
-
-        $imageHashName = $request->file('image_file')->hashName();
-
-        Storage::disk('public')->put("images/original/{$imageHashName}", $this->img->stream());
-        $originalImagePath = Storage::url("images/original/{$imageHashName}");
-
-        if ($request->filled('filter_name')) {
-            $this->applyFilter($request->input('filter_name'));
-        }
-
-        if ($request->filled('watermark_text')) {
-            $this->applyWatermarkText($request->input('watermark_text'));
-        }
-
-        Storage::disk('public')->put("images/modified/{$imageHashName}", $this->img->stream());
-        $modifiedImagePath = Storage::url("images/modified/{$imageHashName}");
+        $imageProcessDetails = $this->modifyAndStoreRequestedImage($request);
 
         $imageProcess = new ImageProcess();
 
-        $imageProcess->original_image_file = $originalImagePath;
-        $imageProcess->modified_image_file = $modifiedImagePath;
-        $imageProcess->filter_name = $request->input('filter_name');
-        $imageProcess->watermark_text = $request->input('watermark_text');
+        $imageProcess->original_image_file = $imageProcessDetails['original_image_path'];
+        $imageProcess->modified_image_file = $imageProcessDetails['modified_image_path'];
+        $imageProcess->filter_name = $imageProcessDetails['filter_name'];
+        $imageProcess->watermark_text = $imageProcessDetails['watermark_text'];
 
         if ($imageProcess->save()) {
            return new ImageProcessResource($imageProcess);
         }
     }
 
-    public function applyFilter(String $filterName) {
+    public function modifyAndStoreRequestedImage(Request $request) {
+        $img = Image::make($request->file('image_file'));
+
+        $imageHashName = $request->file('image_file')->hashName();
+
+        Storage::disk('public')->put("images/original/{$imageHashName}", $img->stream());
+        $originalImagePath = Storage::url("images/original/{$imageHashName}");
+
+        if ($request->filled('filter_name')) {
+            $this->applyFilter($request->input('filter_name'), $img);
+        }
+
+        if ($request->filled('watermark_text')) {
+            $this->applyWatermarkText($request->input('watermark_text'), $img);
+        }
+
+        Storage::disk('public')->put("images/modified/{$imageHashName}", $img->stream());
+        $modifiedImagePath = Storage::url("images/modified/{$imageHashName}");
+
+        return [
+            'original_image_path' => $originalImagePath,
+            'modified_image_path' => $modifiedImagePath,
+            'filter_name' => $request->input('filter_name'),
+            'watermark_text' => $request->input('watermark_text')
+        ];
+    }
+
+    public function applyFilter(String $filterName, \Intervention\Image\Image $img) {
         if ($filterName == 'greyscale') {
-            $this->img->greyscale();
+            $img->greyscale();
         }
 
         if ($filterName == 'blur') {
-            $this->img->blur(15);
+            $img->blur(15);
         }
     }
 
-    public function applyWatermarkText(String $text) {
-        $this->img->text($text, 250, 250, function($font) {
+    public function applyWatermarkText(String $text, \Intervention\Image\Image $img) {
+        $img->text($text, 250, 250, function($font) {
             $font->color('#fdf6e3');
             $font->align('center');
             $font->valign('center');
