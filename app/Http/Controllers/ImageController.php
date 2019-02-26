@@ -55,7 +55,26 @@ class ImageController extends Controller
 
         return new ImageProcessResource($imageProcess);
     }
+    
+    public function applyFilter(String $filterName) {
+        if ($filterName == 'greyscale') {
+            $this->img->greyscale();
+        }
 
+        if ($filterName == 'blur') {
+            $this->img->blur(15);
+        }
+    }
+
+    public function applyWatermarkText(String $text) {
+        $this->img->text($text, 250, 250, function($font) {
+            $font->color('#fdf6e3');
+            $font->align('center');
+            $font->valign('center');
+            $font->angle(45);
+        });
+    }
+    
     public function validateRequest(Request $request) {
         if (!$request->hasFile('image_file')) {
             return [
@@ -96,24 +115,5 @@ class ImageController extends Controller
                 ];
             }
         }
-    }
-
-    public function applyFilter(String $filterName) {
-        if ($filterName == 'greyscale') {
-            $this->img->greyscale();
-        }
-
-        if ($filterName == 'blur') {
-            $this->img->blur(15);
-        }
-    }
-
-    public function applyWatermarkText(String $text) {
-        $this->img->text($text, 250, 250, function($font) {
-            $font->color('#fdf6e3');
-            $font->align('center');
-            $font->valign('center');
-            $font->angle(45);
-        });
     }
 }
