@@ -116,10 +116,4 @@ class ImageController extends Controller
             $font->angle(45);
         });
     }
-
-    public function storeImage(Image $img, String $subDir, String $hashName) {
-        Storage::disk('public')->put("images/{$subDir}/{$hashName}", $img->stream());
-
-        return Storage::url("images/{$subDir}/{$hashName}");
-    }
 }
