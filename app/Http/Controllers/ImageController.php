@@ -28,11 +28,12 @@ class ImageController extends Controller
         $imageProcess->watermark_text = $imageProcessDetails['watermark_text'];
 
         if ($imageProcess->save()) {
-           return new ImageProcessResource($imageProcess);
+            return new ImageProcessResource($imageProcess);
         }
     }
 
-    public function modifyAndStoreRequestedImage(Request $request) {
+    public function modifyAndStoreRequestedImage(Request $request)
+    {
         $img = Image::make($request->file('image_file'));
 
         $imageHashName = $request->file('image_file')->hashName();
@@ -60,7 +61,8 @@ class ImageController extends Controller
         ];
     }
 
-    public function applyFilter(String $filterName, \Intervention\Image\Image $img) {
+    public function applyFilter(String $filterName, \Intervention\Image\Image $img)
+    {
         if ($filterName == 'greyscale') {
             $img->greyscale();
         }
@@ -70,8 +72,9 @@ class ImageController extends Controller
         }
     }
 
-    public function applyWatermarkText(String $text, \Intervention\Image\Image $img) {
-        $img->text($text, 250, 250, function($font) {
+    public function applyWatermarkText(String $text, \Intervention\Image\Image $img)
+    {
+        $img->text($text, 250, 250, function ($font) {
             $font->color('#fdf6e3');
             $font->align('center');
             $font->valign('center');
@@ -79,7 +82,8 @@ class ImageController extends Controller
         });
     }
     
-    public function validateRequest(Request $request) {
+    public function validateRequest(Request $request)
+    {
         if (!$request->hasFile('image_file')) {
             return [
                 'notice' => "An image file should be provided."
