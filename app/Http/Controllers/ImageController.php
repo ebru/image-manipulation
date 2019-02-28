@@ -52,7 +52,7 @@ class ImageController extends Controller
         }
 
         if ($request->hasFile('watermark_image')) {
-            $watermarkImageDetails = $this->applyWatermarkImage($request, $img);
+            $watermarkImageDetails = $this->applyWatermarkImage($request->file('watermark_image'), $img);
         } else {
             $watermarkImageDetails = [
                 'watermark_image_hash_name' => null,
@@ -98,10 +98,10 @@ class ImageController extends Controller
         });
     }
 
-    public function applyWatermarkImage(Request $request, \Intervention\Image\Image $img)
+    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $img)
     {
-        $watermarkImage = Image::make($request->file('watermark_image'));
-        $watermarkImageHashName = $request->file('watermark_image')->hashName();
+        $watermarkImage = Image::make($imageFile);
+        $watermarkImageHashName = $imageFile->hashName();
 
         Storage::disk('public')->put("images/watermarks/{$watermarkImageHashName}", $watermarkImage->stream());
 
