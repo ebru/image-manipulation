@@ -22,10 +22,13 @@ class ImageController extends Controller
 
         $imageProcess = new ImageProcess();
 
-        $imageProcess->original_image_file = $imageProcessDetails['original_image_path'];
-        $imageProcess->modified_image_file = $imageProcessDetails['modified_image_path'];
+        $imageProcess->image_hash_name = $imageProcessDetails['image_hash_name'];
+        $imageProcess->original_image_path = $imageProcessDetails['original_image_path'];
+        $imageProcess->modified_image_path = $imageProcessDetails['modified_image_path'];
         $imageProcess->filter_name = $imageProcessDetails['filter_name'];
         $imageProcess->watermark_text = $imageProcessDetails['watermark_text'];
+        $imageProcess->watermark_image_hash_name = $imageProcessDetails['watermark_image_hash_name'];
+        $imageProcess->watermark_image_path = $imageProcessDetails['watermark_image_path'];
 
         if ($imageProcess->save()) {
             return new ImageProcessResource($imageProcess);
@@ -48,16 +51,28 @@ class ImageController extends Controller
             $this->applyWatermarkText($request->input('watermark_text'), $img);
         }
 
+        if ($request->hasFile('watermark_image')) {
+            $watermarkImageDetails = $this->applyWatermarkImage($request, $img);
+        } else {
+            $watermarkImageDetails = [
+                'watermark_image_hash_name' => null,
+                'watermark_image_path' => null
+            ];
+        }
+
         Storage::disk('public')->put("images/modified/{$imageHashName}", $img->stream());
 
         $originalImagePath = Storage::url("images/original/{$imageHashName}");
         $modifiedImagePath = Storage::url("images/modified/{$imageHashName}");
 
         return [
+            'image_hash_name' => $imageHashName,
             'original_image_path' => $originalImagePath,
             'modified_image_path' => $modifiedImagePath,
             'filter_name' => $request->input('filter_name'),
-            'watermark_text' => $request->input('watermark_text')
+            'watermark_text' => $request->input('watermark_text'),
+            'watermark_image_hash_name' => $watermarkImageDetails['watermark_image_hash_name'],
+            'watermark_image_path' => $watermarkImageDetails['watermark_image_path']
         ];
     }
 
@@ -74,12 +89,30 @@ class ImageController extends Controller
 
     public function applyWatermarkText(String $text, \Intervention\Image\Image $img)
     {
-        $img->text($text, 250, 250, function ($font) {
+        $img->text($text, 20, 20, function ($font) {
+            $font->file(5);
+            $font->size(24);
             $font->color('#fdf6e3');
-            $font->align('center');
-            $font->valign('center');
-            $font->angle(45);
+            $font->align('left');
+            $font->valign('top');
         });
+    }
+
+    public function applyWatermarkImage(Request $request, \Intervention\Image\Image $img)
+    {
+        $watermarkImage = Image::make($request->file('watermark_image'));
+        $watermarkImageHashName = $request->file('watermark_image')->hashName();
+
+        Storage::disk('public')->put("images/watermarks/{$watermarkImageHashName}", $watermarkImage->stream());
+
+        $img->insert($watermarkImage, 'center');
+
+        $watermarkImagePath = Storage::url("images/watermarks/{$watermarkImageHashName}");
+
+        return [
+            'watermark_image_hash_name' => $watermarkImageHashName,
+            'watermark_image_path' => $watermarkImagePath
+        ];
     }
     
     public function validateRequest(Request $request)
@@ -96,7 +129,7 @@ class ImageController extends Controller
             ];
         }
 
-        if (!$request->has('filter_name') && !$request->has('watermark_text')) {
+        if (!$request->has('filter_name') && !$request->has('watermark_text') && !$request->hasFile('watermark_image')) {
             return [
                 'notice' => "At least a filter or watermark should be applied."
             ];

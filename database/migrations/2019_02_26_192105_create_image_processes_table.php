@@ -15,10 +15,13 @@ class CreateImageProcessesTable extends Migration
     {
         Schema::create('image_processes', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('original_image_file');
-            $table->string('modified_image_file');
-            $table->string('filter_name');
-            $table->string('watermark_text');
+            $table->string('image_hash_name');
+            $table->string('original_image_path');
+            $table->string('modified_image_path');
+            $table->string('filter_name')->nullable();
+            $table->string('watermark_text')->nullable();
+            $table->string('watermark_image_hash_name')->nullable();
+            $table->string('watermark_image_path')->nullable();
             $table->timestamps();
         });
     }
