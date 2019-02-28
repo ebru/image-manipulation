@@ -14,13 +14,11 @@ class ImageProcess extends JsonResource
      */
     public function toArray($request)
     {
-        $baseUrl = url('/');
-
         return [
             'image' => [
                 'hash_name' => $this->image_hash_name,
-                'original_path' => $baseUrl . $this->original_image_path,
-                'modified_path' => $baseUrl . $this->modified_image_path,
+                'original_path' => $this->original_image_path,
+                'modified_path' => $this->modified_image_path,
                 'applied' => [
                     'filter' => [
                         'name' => $this->filter_name
@@ -29,7 +27,7 @@ class ImageProcess extends JsonResource
                         'text' => $this->watermark_text,
                         'image' => [
                             'hash_name' => $this->watermark_image_hash_name,
-                            'path' => $baseUrl . $this->watermark_image_path
+                            'path' => $this->watermark_image_path
                         ]
                     ]
                 ]

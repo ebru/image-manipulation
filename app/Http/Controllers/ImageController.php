@@ -123,7 +123,7 @@ class ImageController extends Controller
             ];
         }
 
-        if (!$request->has('filter_name') && !$request->has('watermark_text')) {
+        if (!$request->has('filter_name') && !$request->has('watermark_text') && !$request->hasFile('watermark_image')) {
             return [
                 'notice' => "At least a filter or watermark should be applied."
             ];
