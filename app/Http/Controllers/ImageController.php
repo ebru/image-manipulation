@@ -89,11 +89,12 @@ class ImageController extends Controller
 
     public function applyWatermarkText(String $text, \Intervention\Image\Image $img)
     {
-        $img->text($text, 250, 250, function ($font) {
+        $img->text($text, 20, 20, function ($font) {
+            $font->file(5);
+            $font->size(24);
             $font->color('#fdf6e3');
-            $font->align('center');
-            $font->valign('center');
-            $font->angle(45);
+            $font->align('left');
+            $font->valign('top');
         });
     }
 
@@ -104,7 +105,7 @@ class ImageController extends Controller
 
         Storage::disk('public')->put("images/watermarks/{$watermarkImageHashName}", $watermarkImage->stream());
 
-        $img->insert($watermarkImage, 'bottom-right', 50, 50);
+        $img->insert($watermarkImage, 'center');
 
         $watermarkImagePath = Storage::url("images/watermarks/{$watermarkImageHashName}");
 
