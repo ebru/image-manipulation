@@ -39,7 +39,7 @@ class ImageController extends Controller
         }
     }
 
-    public function modifyAndStoreRequestedImage(Request $request)
+    public function modifyAndStoreRequestedImage(Request $request): Array
     {
         $image = Image::make($request->file('image_file'));
         $imageHashName = $request->file('image_file')->hashName();
@@ -76,7 +76,7 @@ class ImageController extends Controller
         ];
     }
 
-    public function applyFilter(String $filterName, \Intervention\Image\Image $image)
+    public function applyFilter(String $filterName, \Intervention\Image\Image $image): \Intervention\Image\Image
     {
         if ($filterName == 'greyscale') {
             $image->greyscale();
@@ -85,9 +85,11 @@ class ImageController extends Controller
         if ($filterName == 'blur') {
             $image->blur(15);
         }
+
+        return $image;
     }
 
-    public function applyWatermarkText(String $text, \Intervention\Image\Image $image)
+    public function applyWatermarkText(String $text, \Intervention\Image\Image $image): \Intervention\Image\Image
     {
         $image->text($text, 20, 20, function ($font) {
             $font->file(5);
@@ -96,9 +98,11 @@ class ImageController extends Controller
             $font->align('left');
             $font->valign('top');
         });
+
+        return $image;
     }
 
-    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $image)
+    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $image): Array
     {
         $watermarkImage = Image::make($imageFile);
         $watermarkImageHashName = $imageFile->hashName();
@@ -113,14 +117,14 @@ class ImageController extends Controller
         ];
     }
 
-    public function saveImage(\Intervention\Image\Image $image, String $imageHashName, String $directory)
+    public function saveImage(\Intervention\Image\Image $image, String $imageHashName, String $directory): String
     {
         Storage::disk('public')->put("images/{$directory}/{$imageHashName}", $image->stream());
 
         return Storage::url("images/{$directory}/{$imageHashName}");
     }
     
-    public function validateRequest(Request $request)
+    public function validateRequest(Request $request): Array
     {
         if (!$request->hasFile('image_file')) {
             return [
@@ -161,5 +165,7 @@ class ImageController extends Controller
                 ];
             }
         }
+
+        return [];
     }
 }
