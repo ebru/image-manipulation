@@ -47,11 +47,11 @@ class ImageController extends Controller
         $originalImagePath = $this->saveImage($image, $imageHashName, 'original');
 
         if ($request->filled('filter_name')) {
-            $this->applyFilter($request->input('filter_name'), $image);
+            $image = $this->applyFilter($request->input('filter_name'), $image);
         }
 
         if ($request->filled('watermark_text')) {
-            $this->applyWatermarkText($request->input('watermark_text'), $image);
+            $image = $this->applyWatermarkText($request->input('watermark_text'), $image);
         }
 
         if ($request->hasFile('watermark_image')) {
