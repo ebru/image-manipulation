@@ -37,22 +37,21 @@ class ImageController extends Controller
 
     public function modifyAndStoreRequestedImage(Request $request)
     {
-        $img = Image::make($request->file('image_file'));
-
+        $image = Image::make($request->file('image_file'));
         $imageHashName = $request->file('image_file')->hashName();
-
-        Storage::disk('public')->put("images/original/{$imageHashName}", $img->stream());
+        
+        $originalImagePath = $this->saveImage($image, $imageHashName, 'original');
 
         if ($request->filled('filter_name')) {
-            $this->applyFilter($request->input('filter_name'), $img);
+            $this->applyFilter($request->input('filter_name'), $image);
         }
 
         if ($request->filled('watermark_text')) {
-            $this->applyWatermarkText($request->input('watermark_text'), $img);
+            $this->applyWatermarkText($request->input('watermark_text'), $image);
         }
 
         if ($request->hasFile('watermark_image')) {
-            $watermarkImageDetails = $this->applyWatermarkImage($request->file('watermark_image'), $img);
+            $watermarkImageDetails = $this->applyWatermarkImage($request->file('watermark_image'), $image);
         } else {
             $watermarkImageDetails = [
                 'watermark_image_hash_name' => null,
@@ -60,10 +59,7 @@ class ImageController extends Controller
             ];
         }
 
-        Storage::disk('public')->put("images/modified/{$imageHashName}", $img->stream());
-
-        $originalImagePath = Storage::url("images/original/{$imageHashName}");
-        $modifiedImagePath = Storage::url("images/modified/{$imageHashName}");
+        $modifiedImagePath = $this->saveImage($image, $imageHashName, 'modified');
 
         return [
             'image_hash_name' => $imageHashName,
@@ -76,20 +72,20 @@ class ImageController extends Controller
         ];
     }
 
-    public function applyFilter(String $filterName, \Intervention\Image\Image $img)
+    public function applyFilter(String $filterName, \Intervention\Image\Image $image)
     {
         if ($filterName == 'greyscale') {
-            $img->greyscale();
+            $image->greyscale();
         }
 
         if ($filterName == 'blur') {
-            $img->blur(15);
+            $image->blur(15);
         }
     }
 
-    public function applyWatermarkText(String $text, \Intervention\Image\Image $img)
+    public function applyWatermarkText(String $text, \Intervention\Image\Image $image)
     {
-        $img->text($text, 20, 20, function ($font) {
+        $image->text($text, 20, 20, function ($font) {
             $font->file(5);
             $font->size(24);
             $font->color('#fdf6e3');
@@ -98,21 +94,26 @@ class ImageController extends Controller
         });
     }
 
-    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $img)
+    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $image)
     {
         $watermarkImage = Image::make($imageFile);
         $watermarkImageHashName = $imageFile->hashName();
 
-        Storage::disk('public')->put("images/watermarks/{$watermarkImageHashName}", $watermarkImage->stream());
+        $watermarkImagePath = $this->saveImage($watermarkImage, $watermarkImageHashName, 'watermarks');
 
-        $img->insert($watermarkImage, 'center');
-
-        $watermarkImagePath = Storage::url("images/watermarks/{$watermarkImageHashName}");
+        $image->insert($watermarkImage, 'center');
 
         return [
             'watermark_image_hash_name' => $watermarkImageHashName,
             'watermark_image_path' => $watermarkImagePath
         ];
+    }
+
+    public function saveImage(\Intervention\Image\Image $image, String $imageHashName, String $directory)
+    {
+        Storage::disk('public')->put("images/{$directory}/{$imageHashName}", $image->stream());
+
+        return Storage::url("images/{$directory}/{$imageHashName}");
     }
     
     public function validateRequest(Request $request)
