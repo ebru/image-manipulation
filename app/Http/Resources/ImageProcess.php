@@ -18,14 +18,19 @@ class ImageProcess extends JsonResource
 
         return [
             'image' => [
-                'original' => $baseUrl . $this->original_image_file,
-                'modified' => $baseUrl . $this->modified_image_file,
+                'hash_name' => $this->image_hash_name,
+                'original_path' => $baseUrl . $this->original_image_path,
+                'modified_path' => $baseUrl . $this->modified_image_path,
                 'applied' => [
                     'filter' => [
                         'name' => $this->filter_name
                     ],
                     'watermark' => [
-                        'text' => $this->watermark_text
+                        'text' => $this->watermark_text,
+                        'image' => [
+                            'hash_name' => $this->watermark_image_hash_name,
+                            'path' => $baseUrl . $this->watermark_image_path
+                        ]
                     ]
                 ]
             ]
