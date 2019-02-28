@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\User;
 
 class PassportController extends Controller
@@ -25,7 +26,8 @@ class PassportController extends Controller
  
         $token = $user->createToken('image-manipulation')->accessToken;
  
-        return response()->json(['token' => $token], 200);
+        return response()->json(['token' => $token])
+            ->setStatusCode(Response::HTTP_OK);
     }
 
     public function login(Request $request)
@@ -37,14 +39,18 @@ class PassportController extends Controller
  
         if (auth()->attempt($credentials)) {
             $token = auth()->user()->createToken('image-manipulation')->accessToken;
-            return response()->json(['token' => $token], 200);
-        } else {
-            return response()->json(['error' => 'Unauthorised.'], 401);
+
+            return response()->json(['token' => $token])
+                ->setStatusCode(Response::HTTP_OK);
         }
+
+        return response()->json(['error' => 'Unauthorized.'])
+            ->setStatusCode(Response::HTTP_UNAUTHORIZED);
     }
 
     public function details()
     {
-        return response()->json(['user' => auth()->user()], 200);
+        return response()->json(['user' => auth()->user()])
+            ->setStatusCode(Response::HTTP_OK);
     }
 }
