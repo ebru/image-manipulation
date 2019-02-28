@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Image;
 use Storage;
 use App\ImageProcess;
@@ -15,7 +18,8 @@ class ImageController extends Controller
         $validationResponse = $this->validateRequest($request);
 
         if ($validationResponse) {
-            return response()->json($validationResponse);
+            return response()->json($validationResponse)
+                ->setStatusCode(Response::HTTP_BAD_REQUEST);
         }
 
         $imageProcessDetails = $this->modifyAndStoreRequestedImage($request);
