@@ -18,10 +18,10 @@ class CreateImageProcessesTable extends Migration
             $table->string('image_hash_name');
             $table->string('original_image_path');
             $table->string('modified_image_path');
-            $table->string('filter_name');
-            $table->string('watermark_text');
-            $table->string('watermark_image_hash_name');
-            $table->string('watermark_image_path');
+            $table->string('filter_name')->nullable();
+            $table->string('watermark_text')->nullable();
+            $table->string('watermark_image_hash_name')->nullable();
+            $table->string('watermark_image_path')->nullable();
             $table->timestamps();
         });
     }
