@@ -53,6 +53,11 @@ class ImageController extends Controller
 
         if ($request->hasFile('watermark_image')) {
             $watermarkImageDetails = $this->applyWatermarkImage($request, $img);
+        } else {
+            $watermarkImageDetails = [
+                'watermark_image_hash_name' => null,
+                'watermark_image_path' => null
+            ];
         }
 
         Storage::disk('public')->put("images/modified/{$imageHashName}", $img->stream());
