@@ -10,6 +10,12 @@ use App\User;
 
 class PassportController extends Controller
 {
+    /**
+     * Creates an api token while registering a new user
+     *
+     * @param Request $request
+     * @return Response
+     */
     public function register(Request $request)
     {
         $this->validate($request, [
