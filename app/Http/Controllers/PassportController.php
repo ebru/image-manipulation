@@ -29,28 +29,4 @@ class PassportController extends Controller
         return response()->json(['token' => $token])
             ->setStatusCode(Response::HTTP_OK);
     }
-
-    public function login(Request $request)
-    {
-        $credentials = [
-            'email' => $request->email,
-            'password' => $request->password
-        ];
- 
-        if (auth()->attempt($credentials)) {
-            $token = auth()->user()->createToken('image-manipulation')->accessToken;
-
-            return response()->json(['token' => $token])
-                ->setStatusCode(Response::HTTP_OK);
-        }
-
-        return response()->json(['error' => 'Unauthorized.'])
-            ->setStatusCode(Response::HTTP_UNAUTHORIZED);
-    }
-
-    public function details()
-    {
-        return response()->json(['user' => auth()->user()])
-            ->setStatusCode(Response::HTTP_OK);
-    }
 }
