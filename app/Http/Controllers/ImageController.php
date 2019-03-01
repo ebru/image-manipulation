@@ -78,6 +78,7 @@ class ImageController extends Controller
                 'watermark_image_path' => null
             ];
         }
+        
         return [
             'modified_image' => $image,
             'filter_name' => $request->input('filter_name'),
