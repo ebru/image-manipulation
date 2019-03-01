@@ -10,6 +10,7 @@ use Image;
 use Storage;
 use App\ImageProcess;
 use App\Http\Resources\ImageProcess as ImageProcessResource;
+use \Intervention\Image\Image as InterventionImage;
 
 class ImageController extends Controller
 {
@@ -28,13 +29,18 @@ class ImageController extends Controller
                 ->setStatusCode(Response::HTTP_BAD_REQUEST);
         }
 
-        $imageProcessDetails = $this->modifyAndStoreRequestedImage($request);
+        $imageHashName = $request->file('image_file')->hashName();
+        $originalImage = Image::make($request->file('image_file'));
+
+        $imageProcessDetails = $this->manipulateImageRequest($request);
+
+        $imagePathDetails = $this->storeImages($originalImage, $imageProcessDetails['modified_image'], $imageHashName);
 
         $imageProcess = new ImageProcess();
 
-        $imageProcess->image_hash_name = $imageProcessDetails['image_hash_name'];
-        $imageProcess->original_image_path = $imageProcessDetails['original_image_path'];
-        $imageProcess->modified_image_path = $imageProcessDetails['modified_image_path'];
+        $imageProcess->image_hash_name = $imageHashName;
+        $imageProcess->original_image_path = $imagePathDetails['original_image_path'];
+        $imageProcess->modified_image_path = $imagePathDetails['modified_image_path'];
         $imageProcess->filter_name = $imageProcessDetails['filter_name'];
         $imageProcess->watermark_text = $imageProcessDetails['watermark_text'];
         $imageProcess->watermark_image_hash_name = $imageProcessDetails['watermark_image_hash_name'];
@@ -45,12 +51,16 @@ class ImageController extends Controller
         }
     }
 
-    public function modifyAndStoreRequestedImage(Request $request): Array
+    /**
+     * Manipulate the image while applying filter/watermark
+     *
+     * @param Request $request
+     * @param InterventionImage $image
+     * @return array
+     */
+    public function manipulateImageRequest(Request $request): array
     {
         $image = Image::make($request->file('image_file'));
-        $imageHashName = $request->file('image_file')->hashName();
-        
-        $originalImagePath = $this->saveImage($image, $imageHashName, 'original');
 
         if ($request->filled('filter_name')) {
             $image = $this->applyFilter($request->input('filter_name'), $image);
@@ -68,13 +78,8 @@ class ImageController extends Controller
                 'watermark_image_path' => null
             ];
         }
-
-        $modifiedImagePath = $this->saveImage($image, $imageHashName, 'modified');
-
         return [
-            'image_hash_name' => $imageHashName,
-            'original_image_path' => $originalImagePath,
-            'modified_image_path' => $modifiedImagePath,
+            'modified_image' => $image,
             'filter_name' => $request->input('filter_name'),
             'watermark_text' => $request->input('watermark_text'),
             'watermark_image_hash_name' => $watermarkImageDetails['watermark_image_hash_name'],
@@ -86,10 +91,10 @@ class ImageController extends Controller
      * Apply filter to image passed
      *
      * @param string $filterName
-     * @param \Intervention\Image\Image $image
-     * @return \Intervention\Image\Image
+     * @param InterventionImage $image
+     * @return InterventionImage
      */
-    public function applyFilter(string $filterName, \Intervention\Image\Image $image): \Intervention\Image\Image
+    public function applyFilter(string $filterName, InterventionImage $image): InterventionImage
     {
         if ($filterName == 'greyscale') {
             $image->greyscale();
@@ -106,10 +111,10 @@ class ImageController extends Controller
      * Apply watermark text to image passed
      *
      * @param string $text
-     * @param \Intervention\Image\Image $image
-     * @return \Intervention\Image\Image
+     * @param InterventionImage $image
+     * @return InterventionImage
      */
-    public function applyWatermarkText(string $text, \Intervention\Image\Image $image): \Intervention\Image\Image
+    public function applyWatermarkText(string $text, InterventionImage $image): InterventionImage
     {
         $image->text($text, 20, 20, function ($font) {
             $font->file(5);
@@ -126,10 +131,10 @@ class ImageController extends Controller
      * Apply watermark image to image passed
      *
      * @param \Illuminate\Http\UploadedFile $imageFile
-     * @param \Intervention\Image\Image $image
+     * @param InterventionImage $image
      * @return array
      */
-    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $image): array
+    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, InterventionImage $image): array
     {
         $watermarkImage = Image::make($imageFile);
         $watermarkImageHashName = $imageFile->hashName();
@@ -145,14 +150,30 @@ class ImageController extends Controller
     }
 
     /**
+     * Store the original and modified versions of the image requested
+     *
+     * @param InterventionImage $originalImage
+     * @param InterventionImage $modifiedImage
+     * @param string $imageHashName
+     * @return array
+     */
+    public function storeImages(InterventionImage $originalImage, InterventionImage $modifiedImage, string $imageHashName): array
+    {
+        return [
+            'original_image_path' => $this->saveImage($originalImage, $imageHashName, 'original'),
+            'modified_image_path' => $this->saveImage($modifiedImage, $imageHashName, 'modified')
+        ];
+    }
+
+    /**
      * Save image to public storage
      *
-     * @param \Intervention\Image\Image $image
+     * @param InterventionImage $image
      * @param string $imageHashName
      * @param string $directory
      * @return string
      */
-    public function saveImage(\Intervention\Image\Image $image, string $imageHashName, string $directory): string
+    public function saveImage(InterventionImage $image, string $imageHashName, string $directory): string
     {
         Storage::disk('public')->put("images/{$directory}/{$imageHashName}", $image->stream());
 
