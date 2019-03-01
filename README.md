@@ -109,7 +109,7 @@ Returns the details of manipulated image that applied filter/watermark.
 
 * **image_file** is required.
 * At least a filter/watermark should be applied. 
-* Applicable filters; blur, greyscale
+* Applicable filters: blur, greyscale
 
 **Response**
 
