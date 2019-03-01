@@ -13,6 +13,12 @@ use App\Http\Resources\ImageProcess as ImageProcessResource;
 
 class ImageController extends Controller
 {
+    /**
+     * Processing of the requested image
+     *
+     * @param Request $request
+     * @return ImageProcessResource
+     */
     public function process(Request $request)
     {
         $validationResponse = $this->validateRequest($request);
@@ -76,7 +82,14 @@ class ImageController extends Controller
         ];
     }
 
-    public function applyFilter(String $filterName, \Intervention\Image\Image $image): \Intervention\Image\Image
+    /**
+     * Apply filter to image passed
+     *
+     * @param string $filterName
+     * @param \Intervention\Image\Image $image
+     * @return \Intervention\Image\Image
+     */
+    public function applyFilter(string $filterName, \Intervention\Image\Image $image): \Intervention\Image\Image
     {
         if ($filterName == 'greyscale') {
             $image->greyscale();
@@ -89,7 +102,14 @@ class ImageController extends Controller
         return $image;
     }
 
-    public function applyWatermarkText(String $text, \Intervention\Image\Image $image): \Intervention\Image\Image
+    /**
+     * Apply watermark text to image passed
+     *
+     * @param string $text
+     * @param \Intervention\Image\Image $image
+     * @return \Intervention\Image\Image
+     */
+    public function applyWatermarkText(string $text, \Intervention\Image\Image $image): \Intervention\Image\Image
     {
         $image->text($text, 20, 20, function ($font) {
             $font->file(5);
@@ -102,7 +122,14 @@ class ImageController extends Controller
         return $image;
     }
 
-    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $image): Array
+    /**
+     * Apply watermark image to image passed
+     *
+     * @param \Illuminate\Http\UploadedFile $imageFile
+     * @param \Intervention\Image\Image $image
+     * @return array
+     */
+    public function applyWatermarkImage(\Illuminate\Http\UploadedFile $imageFile, \Intervention\Image\Image $image): array
     {
         $watermarkImage = Image::make($imageFile);
         $watermarkImageHashName = $imageFile->hashName();
@@ -117,14 +144,28 @@ class ImageController extends Controller
         ];
     }
 
-    public function saveImage(\Intervention\Image\Image $image, String $imageHashName, String $directory): String
+    /**
+     * Save image to public storage
+     *
+     * @param \Intervention\Image\Image $image
+     * @param string $imageHashName
+     * @param string $directory
+     * @return string
+     */
+    public function saveImage(\Intervention\Image\Image $image, string $imageHashName, string $directory): string
     {
         Storage::disk('public')->put("images/{$directory}/{$imageHashName}", $image->stream());
 
         return Storage::url("images/{$directory}/{$imageHashName}");
     }
     
-    public function validateRequest(Request $request): Array
+    /**
+     * Validate the request
+     *
+     * @param Request $request
+     * @return array
+     */
+    public function validateRequest(Request $request): array
     {
         if (!$request->hasFile('image_file')) {
             return [
