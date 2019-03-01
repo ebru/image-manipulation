@@ -107,8 +107,9 @@ Returns the details of manipulated image that applied filter/watermark.
 | POST    | watermark_text         | String        |
 | POST    | watermark_image        | File          |
 
-**image_file** is required.
-At least a filter/watermark should be applied. 
+* **image_file** is required.
+* At least a filter/watermark should be applied. 
+* Applicable filters; blur, greyscale
 
 **Response**
 
