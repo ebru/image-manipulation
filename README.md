@@ -1,6 +1,6 @@
 # Image Manipulation w/ Intervention Image
 
-A REST API application manipulates an image using Intervention Image. It allows you to make POST requests to add filter and/or watermark to an image. https://ebrukye.github.io/image-manipulation/
+A REST API application manipulates an image using Intervention Image. It allows you to make POST requests to add filter and/or watermark to an image.
 
 **Technologies used;**
 - Laravel 5.7.27 as framework
@@ -14,7 +14,7 @@ A REST API application manipulates an image using Intervention Image. It allows 
 ## Installation
 * Clone the repository and go to project directory.
 
-`git clone https://github.com/ebrukye/image-manipulation.git`
+`git clone https://github.com/ebru/image-manipulation.git`
 
 `cd image-manipulation`
 
